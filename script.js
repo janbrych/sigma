@@ -6,9 +6,20 @@ function updateSeedDisplay() {
     localStorage.setItem('cucumber_seeds', seeds);
 }
 
+// Global state for event listeners
+let currentHandlers = {};
+
+function clearHandlers() {
+    if (currentHandlers.keypress) window.removeEventListener('keypress', currentHandlers.keypress);
+    if (currentHandlers.keydown) window.removeEventListener('keydown', currentHandlers.keydown);
+    currentHandlers = {};
+}
+
 function showScreen(screenId) {
+    clearHandlers();
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(screenId).classList.add('active');
+
     if (screenId === 'screen-catch') startCatchGame();
     if (screenId === 'screen-gaza') startGazaGame();
     if (screenId !== 'screen-video') {
@@ -36,7 +47,7 @@ videos.forEach(video => {
     btn.className = 'video-btn';
     btn.innerText = video.title;
     btn.onclick = () => {
-        videoIframe.src = video.url;
+        videoIframe.src = video.url + "?autoplay=1";
     };
     videoList.appendChild(btn);
 });
@@ -56,33 +67,25 @@ mainCucumber.addEventListener('click', (event) => {
             { text: 'חנות ירקות', action: () => showScreen('screen-shop') }
         ];
 
-        // Positions relative to the container center
-        const centerX = 0; // Container itself is positioned correctly
-        const centerY = 0;
-
         items.forEach((item, index) => {
             const angle = (index / items.length) * Math.PI * 2;
-            const radius = 220 + Math.random() * 40;
+            const radius = 250;
             const x = Math.cos(angle) * radius;
             const y = Math.sin(angle) * radius;
 
             const div = document.createElement('div');
             div.className = 'menu-item';
             div.innerHTML = `<span>${item.text}</span>`;
-            div.style.left = `calc(50% + ${x}px)`;
-            div.style.top = `calc(50% + ${y}px)`;
+            div.style.left = `${x}px`;
+            div.style.top = `${y}px`;
             div.style.transform = 'translate(-50%, -50%)';
 
-            // Create arrow pointing to cucumber
             const arrow = document.createElement('div');
             arrow.className = 'arrow-line';
-
-            // Point towards center (0,0) from (x,y)
             const rotation = Math.atan2(-y, -x);
-
-            arrow.style.width = `${radius - 60}px`;
-            arrow.style.left = `calc(50% + ${x}px)`;
-            arrow.style.top = `calc(50% + ${y}px)`;
+            arrow.style.width = `${radius - 50}px`;
+            arrow.style.left = `${x}px`;
+            arrow.style.top = `${y}px`;
             arrow.style.transform = `rotate(${rotation}rad)`;
 
             const arrowhead = document.createElement('div');
@@ -113,16 +116,11 @@ document.body.onclick = () => {
 
 // Back Buttons
 document.querySelectorAll('.back-btn').forEach(btn => {
-    btn.onclick = () => {
-        showScreen('screen-main');
-    };
+    btn.onclick = () => showScreen('screen-main');
 });
 
 // Game 1: Catch the Falling Cucumber
-let catchActive = false;
 function startCatchGame() {
-    if (catchActive) return;
-    catchActive = true;
     const canvas = document.getElementById('catch-canvas');
     const ctx = canvas.getContext('2d');
     const scoreElement = document.getElementById('catch-score');
@@ -143,10 +141,7 @@ function startCatchGame() {
     }
 
     function update() {
-        if (!document.getElementById('screen-catch').classList.contains('active')) {
-            catchActive = false;
-            return;
-        }
+        if (!document.getElementById('screen-catch').classList.contains('active')) return;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
         ctx.fillStyle = '#166534';
@@ -178,30 +173,36 @@ function startCatchGame() {
         requestAnimationFrame(update);
     }
 
-    window.onkeydown = (e) => {
+    currentHandlers.keydown = (e) => {
         if (e.key === 'ArrowLeft' && paddle.x > 0) paddle.x -= 30;
         if (e.key === 'ArrowRight' && paddle.x < canvas.width - paddle.w) paddle.x += 30;
     };
+    window.addEventListener('keydown', currentHandlers.keydown);
 
     update();
 }
 
 // Game 2: Cucumber the Gaza
-let gazaActive = false;
 function startGazaGame() {
-    if (gazaActive) return;
-    gazaActive = true;
     const container = document.getElementById('gaza-game-container');
     const plane = document.getElementById('plane');
     const bg = document.getElementById('gaza-background');
+
+    document.querySelectorAll('.building').forEach(b => b.remove());
+
+    for(let i=0; i<8; i++) {
+        const b = document.createElement('div');
+        b.className = 'building';
+        b.style.left = (i * 100 + 10) + 'px';
+        b.style.height = (50 + Math.random() * 100) + 'px';
+        container.appendChild(b);
+    }
+
     let planeX = 0;
     let direction = 1;
 
     function movePlane() {
-        if (!document.getElementById('screen-gaza').classList.contains('active')) {
-            gazaActive = false;
-            return;
-        }
+        if (!document.getElementById('screen-gaza').classList.contains('active')) return;
         planeX += 4 * direction;
         if (planeX > 750 || planeX < 0) direction *= -1;
         plane.style.left = planeX + 'px';
@@ -210,12 +211,10 @@ function startGazaGame() {
     }
     movePlane();
 
-    const handleKey = (e) => {
-        if (e.code === 'Space' && document.getElementById('screen-gaza').classList.contains('active')) {
-            dropCucumber();
-        }
+    currentHandlers.keypress = (e) => {
+        if (e.code === 'Space') dropCucumber();
     };
-    window.addEventListener('keypress', handleKey);
+    window.addEventListener('keypress', currentHandlers.keypress);
 
     function dropCucumber() {
         const cuke = document.createElement('div');
@@ -228,26 +227,52 @@ function startGazaGame() {
         let top = 100;
         let scale = 1;
         const fall = setInterval(() => {
+            if (!document.getElementById('screen-gaza').classList.contains('active')) {
+                clearInterval(fall);
+                cuke.remove();
+                return;
+            }
             top += 7;
             scale -= 0.012;
             cuke.style.top = top + 'px';
             cuke.style.transform = `scale(${Math.max(0.1, scale)})`;
 
-            if (top > 440) {
+            let hit = false;
+            const cRect = cuke.getBoundingClientRect();
+            document.querySelectorAll('.building').forEach(b => {
+                if (hit) return;
+                const bRect = b.getBoundingClientRect();
+                if (cRect.bottom > bRect.top && cRect.left < bRect.right && cRect.right > bRect.left) {
+                    hit = true;
+                    clearInterval(fall);
+                    explode(cRect.left, cRect.bottom, b);
+                    cuke.remove();
+                }
+            });
+
+            if (!hit && top > 440) {
                 clearInterval(fall);
-                explode(cuke.offsetLeft + 15, top);
+                const containerRect = container.getBoundingClientRect();
+                explode(cRect.left, top);
                 cuke.remove();
             }
         }, 20);
     }
 
-    function explode(x, y) {
+    function explode(x, y, building = null) {
         const exp = document.createElement('div');
         exp.className = 'explosion';
-        exp.innerText = '💥';
-        exp.style.left = x + 'px';
-        exp.style.top = y + 'px';
+        exp.innerHTML = '💥<div class="praise">תהילה לנתניהו</div>';
+
+        const containerRect = container.getBoundingClientRect();
+        exp.style.left = (x - containerRect.left) + 'px';
+        exp.style.top = (y - containerRect.top) + 'px';
         container.appendChild(exp);
+
+        if (building) {
+            building.classList.add('burning');
+            setTimeout(() => building.classList.add('destroyed'), 1000);
+        }
 
         bg.classList.add('burned');
         setTimeout(() => bg.classList.remove('burned'), 2000);
@@ -255,7 +280,7 @@ function startGazaGame() {
         seeds += 10;
         updateSeedDisplay();
 
-        setTimeout(() => exp.remove(), 500);
+        setTimeout(() => exp.remove(), 1000);
     }
 }
 

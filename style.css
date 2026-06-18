@@ -34,10 +34,12 @@ h1 {
     position: relative;
     display: inline-block;
     cursor: pointer;
+    width: 400px;
+    height: 200px;
 }
 
 #main-cucumber {
-    max-width: 400px;
+    width: 100%;
     transition: transform 0.3s;
 }
 
@@ -48,10 +50,10 @@ h1 {
 /* Menu Arrows */
 #menu-container {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 50%;
+    left: 50%;
+    width: 0;
+    height: 0;
     pointer-events: none;
 }
 
@@ -165,10 +167,35 @@ h1 {
     z-index: 10;
 }
 
+.building {
+    position: absolute;
+    bottom: 0;
+    width: 80px;
+    background: #555;
+    border: 2px solid #333;
+    z-index: 5;
+    transition: background 0.5s, height 1s;
+}
+
+.building.burning {
+    background: #f97316;
+    animation: flicker 0.1s infinite;
+}
+
+.building.destroyed {
+    background: #111;
+    height: 20px !important;
+}
+
+@keyframes flicker {
+    0% { opacity: 0.8; }
+    100% { opacity: 1; }
+}
+
 .falling-cucumber {
     position: absolute;
     font-size: 30px;
-    z-index: 5;
+    z-index: 8;
 }
 
 .explosion {
@@ -177,6 +204,17 @@ h1 {
     transform: translate(-50%, -50%);
     animation: explode 0.5s forwards;
     z-index: 15;
+    text-align: center;
+}
+
+.praise {
+    font-size: 14px;
+    color: white;
+    background: rgba(0,0,0,0.7);
+    padding: 2px 5px;
+    border-radius: 5px;
+    margin-top: -10px;
+    white-space: nowrap;
 }
 
 @keyframes explode {
