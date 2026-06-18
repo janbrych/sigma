@@ -252,7 +252,6 @@ function startGazaGame() {
 
             if (!hit && top > 440) {
                 clearInterval(fall);
-                const containerRect = container.getBoundingClientRect();
                 explode(cRect.left, top);
                 cuke.remove();
             }
