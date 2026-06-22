@@ -22,6 +22,7 @@ function showScreen(screenId) {
 
     if (screenId === 'screen-catch') startCatchGame();
     if (screenId === 'screen-gaza') startGazaGame();
+    if (screenId === 'screen-social') showSocialCredit();
     if (screenId !== 'screen-video') {
         document.getElementById('video-iframe').src = '';
     }
@@ -66,6 +67,11 @@ mainCucumber.addEventListener('click', (event) => {
             { text: 'מלפפון עזה', action: () => showScreen('screen-gaza') },
             { text: 'חנות ירקות', action: () => showScreen('screen-shop') }
         ];
+
+        // Randomly add "Praise Netanyahu" option (20% chance)
+        if (Math.random() < 0.2) {
+            items.push({ text: 'הלל לנתניהו', action: () => showScreen('screen-social') });
+        }
 
         items.forEach((item, index) => {
             const angle = (index / items.length) * Math.PI * 2;
@@ -149,13 +155,14 @@ function startCatchGame() {
         ctx.roundRect(paddle.x, paddle.y, paddle.w, paddle.h, 5);
         ctx.fill();
 
-        items.forEach((item, index) => {
+        for (let i = items.length - 1; i >= 0; i--) {
+            const item = items[i];
             item.y += speed;
             ctx.font = '30px Arial';
             ctx.fillText(item.type, item.x, item.y);
 
             if (item.y > paddle.y && item.y < paddle.y + paddle.h && item.x + 20 > paddle.x && item.x < paddle.x + paddle.w) {
-                items.splice(index, 1);
+                items.splice(i, 1);
                 score++;
                 let reward = 1;
                 if (item.type === '🍆') reward = 5;
@@ -165,9 +172,9 @@ function startCatchGame() {
                 scoreElement.innerText = score;
                 updateSeedDisplay();
             } else if (item.y > canvas.height + 30) {
-                items.splice(index, 1);
+                items.splice(i, 1);
             }
-        });
+        }
 
         if (Math.random() < 0.03) spawnItem();
         requestAnimationFrame(update);
@@ -318,3 +325,42 @@ document.querySelectorAll('.buy-btn').forEach(btn => {
 
 setInterval(updateShop, 1000);
 updateSeedDisplay();
+
+// Social Credit Logic
+const netanyahuQuotes = [
+    "ישראל היא הבית הלאומי של העם היהודי.",
+    "הביטחון הוא מעל הכל.",
+    "אנחנו בונים את המדינה שלנו בנחישות.",
+    "עתידנו בידינו.",
+    "הכלכלה שלנו פורחת בזכותכם.",
+    "יחד ננצח את כל המכשולים.",
+    "השלום יבוא רק כשאויבינו יבינו שאנחנו כאן כדי להישאר.",
+    "החדשנות היא המנוע של ישראל."
+];
+
+function showSocialCredit() {
+    const quoteBox = document.getElementById('netanyahu-quote');
+    const randomQuote = netanyahuQuotes[Math.floor(Math.random() * netanyahuQuotes.length)];
+    quoteBox.innerText = randomQuote;
+}
+
+document.getElementById('praise-btn').onclick = () => {
+    seeds += 100;
+    updateSeedDisplay();
+    createConfetti();
+    alert('קיבלת 100 זרעי מלפפון מהמנהיג!');
+};
+
+function createConfetti() {
+    const container = document.getElementById('confetti-container');
+    for (let i = 0; i < 50; i++) {
+        const conf = document.createElement('div');
+        conf.className = 'confetti';
+        conf.style.left = Math.random() * 100 + 'vw';
+        conf.style.backgroundColor = `hsl(${Math.random() * 360}, 100%, 50%)`;
+        conf.style.animationDuration = (Math.random() * 2 + 1) + 's';
+        conf.style.animationDelay = Math.random() + 's';
+        container.appendChild(conf);
+        setTimeout(() => conf.remove(), 3000);
+    }
+}
