@@ -38,8 +38,12 @@ h1 {
 
 #main-cucumber {
     max-width: 400px;
+    height: auto;
     transition: transform 0.3s;
     display: block;
+    background-color: #dcfce7;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 #main-cucumber:hover {

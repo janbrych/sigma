@@ -1,3 +1,4 @@
+console.log("Cucumber App Initialized");
 let seeds = parseInt(localStorage.getItem('cucumber_seeds')) || 0;
 let unlocked = JSON.parse(localStorage.getItem('cucumber_unlocked')) || ['cucumber'];
 
