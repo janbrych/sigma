@@ -34,13 +34,16 @@ h1 {
     position: relative;
     display: inline-block;
     cursor: pointer;
-    width: 400px;
-    height: 200px;
 }
 
 #main-cucumber {
-    width: 100%;
+    max-width: 400px;
+    height: auto;
     transition: transform 0.3s;
+    display: block;
+    background-color: #dcfce7;
+    border-radius: 20px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.1);
 }
 
 #main-cucumber:hover {
@@ -55,6 +58,7 @@ h1 {
     width: 0;
     height: 0;
     pointer-events: none;
+    z-index: 100;
 }
 
 .menu-item {
@@ -65,7 +69,6 @@ h1 {
     box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     white-space: nowrap;
     cursor: pointer;
-    z-index: 100;
     pointer-events: auto;
     display: flex;
     align-items: center;
@@ -73,10 +76,11 @@ h1 {
     font-weight: bold;
     color: #166534;
     transition: transform 0.2s;
+    z-index: 110;
 }
 
 .menu-item:hover {
-    transform: scale(1.1);
+    transform: translate(-50%, -50%) scale(1.1) !important;
 }
 
 .arrow-line {
@@ -286,4 +290,77 @@ h1 {
 .buy-btn:disabled {
     background: #94a3b8;
     cursor: not-allowed;
+}
+
+/* Social Credit */
+.social-credit-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+    margin-top: 40px;
+}
+
+.quote-box {
+    background: white;
+    border: 3px solid #166534;
+    padding: 20px;
+    border-radius: 15px;
+    max-width: 600px;
+    font-size: 1.5rem;
+    font-style: italic;
+    color: #166534;
+    position: relative;
+}
+
+.quote-box::before {
+    content: '"';
+    font-size: 4rem;
+    position: absolute;
+    top: -10px;
+    right: 10px;
+    opacity: 0.2;
+}
+
+.praise-button {
+    padding: 15px 40px;
+    font-size: 1.5rem;
+    background: #ef4444;
+    color: white;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-weight: bold;
+    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
+    transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.praise-button:active {
+    transform: scale(0.95);
+    box-shadow: 0 2px 5px rgba(239, 68, 68, 0.4);
+}
+
+#confetti-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 2000;
+}
+
+.confetti {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #f00;
+    top: -10px;
+    animation: fall linear forwards;
+}
+
+@keyframes fall {
+    to {
+        transform: translateY(100vh) rotate(720deg);
+    }
 }
